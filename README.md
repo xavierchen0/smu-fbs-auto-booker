@@ -16,20 +16,20 @@ This tool is built entirely with the following Tech Stack:
 - Cron jobs
 
 # Installation
-1. Ensure you have NodeJS installed [link to installation guide](https://nodejs.org/en/download/)
-2. Clone the repo to local
-3. `cd` to root directory
-4. run `npm install`
+1. Ensure you have NodeJS installed [link to installation guide](https://nodejs.org/en/download/).
+2. Clone the repo to local.
+3. `cd` to root directory.
+4. run `npm install`.
 
 # Usage
-To run the script, just run at the root directory
+To run the script, just run at the root directory.
 
 ```bash
 node --env-file=.env main.js
 ```
 
 # How does it work?
-1. The tool launches a profileless browser and logs you in via SMU login page
+1. The tool launches a profileless browser and logs you in via SMU login page.
     - The FBS site would either redirect you to log in directly via SMU login page, or redirect you to an intermediate page asking you to open your Microsoft Authenticator app and enter the code displayed on the web page in the app itself.
     - If you are redirected to the latter, this tool will automatically select the option to log you in via SMU login page.
     - Support for Microsoft's Time-based One-Time Password (TOTP) is not supported yet, but if there is demand for it, I can implement it using the npm package `otpauth` and with some simple Microsoft Authenticator setup.
@@ -39,7 +39,7 @@ node --env-file=.env main.js
     - Note that if you have logged in before and you have the local login state file, and that login has not expired, Steps 1 and 2 will be automatically skipped.
 4. That's it!
 
-**Note:** Logging can be found in the directory `./logs/logging.log` and `./logs/cron.log` (if you have set up a cron job, explained below)
+**Note:** Logging can be found in the directory `./logs/logging.log` and `./logs/cron.log` (if you have set up a cron job, explained below).
 
 # Configuration
 Create a `.env` file and paste the following inside the file:
@@ -96,7 +96,7 @@ BOOKING_COBOOKER=<co-booker SMU email>
 
 Edit the environment variables accordingly.
 
-**Note:** Change `IS_BOOKING_DEBUG=true` and `LOG_LEVEL=debug` when debugging
+**Note:** Change `$IS_BOOKING_DEBUG=true` and `$LOG_LEVEL=debug` when debugging.
 
 # Setting up the cron job
 Set up a cron job to run this tool everyday (except sundays) at 0000hrs.
@@ -111,10 +111,12 @@ Paste the command below into the cron table file, and save and quit
 0 0 * * 1-6 cd ~/dev/autobooking/run_autobooking.sh && node --env-file=.env main.js >> logs/cron.log 2>&1
 ```
 
+The bash script `run_autobooking.sh` runs `main.js` (the main auto-booking script) and `updateBookingDate.js` (increment the env variable `$BOOKING_DATE` by 1 day, and if it is on a Sunday, increment it again to a Monday).
+
 # Disclaimer
 
 ## Disclaimer 1
 Please be considerate to other SMU students!!! Please only book the room if you intend to actually use it!
 
 ## Disclaimer 2
-This tool is best used when you want to book a room at exactly the date (14 days from today) when it releases. This is because the tool will fail if the room you are trying to book is not available. At 0000hrs 14 days from today, you can almost guarantee that the room is available. 
+This tool is best used when you want to book a room at exactly the date (14 days from today) when it releases. This is because the tool will fail if the room you are trying to book is not available. At 0000hrs 14 days from today, you can almost guarantee that the room is available.
