@@ -106,9 +106,9 @@ Enter the command in the terminal
 $ crontab -e
 ```
 
-Paste the command below into the cron table file, and save and quit
+Paste the command below into the cron table file, edit `<root dir of project>` and save and quit
 ```bash
-0 0 * * 1-6 cd ~/dev/autobooking/run_autobooking.sh && node --env-file=.env main.js >> logs/cron.log 2>&1
+0 0 * * 1-6 cd <root dir of project> && ./run_autobooking.sh >> logs/cron.log 2>&1
 ```
 
 The bash script `run_autobooking.sh` runs `main.js` (the main auto-booking script) and `updateBookingDate.js` (increment the env variable `$BOOKING_DATE` by 1 day, and if it is on a Sunday, increment it again to a Monday).
