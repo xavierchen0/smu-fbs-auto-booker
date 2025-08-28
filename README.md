@@ -1,7 +1,7 @@
 # Introduction
 Do you have your favourite SMU room that you always study or do project meetings in? Isn't it frustrating when your favourite room is booked because you were not fast enough 😭?
 
-This tool serves to automate the booking process entirely with your configuration specified in a .env file 🚀!
+This tool serves to automate the booking process entirely with your configuration specified in a `.env` file 🚀!
 
 # Tech Stack
 This tool is built entirely with the following Tech Stack:
