@@ -11,6 +11,12 @@ This tool is built entirely with the following Tech Stack:
 - Bash
 - Cron jobs
 
+# Installation
+1. Ensure you have NodeJS installed [link to installation guide](https://nodejs.org/en/download/)
+2. Clone the repo to local
+3. cd to root directory
+4. run `npm install`
+
 # How does it work?
 1. The tool launches a profileless browser and logs you in via SMU login page
     - The FBS site would either redirect you to log in directly via SMU login page, or redirect you to an intermediate page asking you to open your Microsoft Authenticator app and enter the code displayed on the web page in the app itself.
