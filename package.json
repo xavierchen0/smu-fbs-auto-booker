@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  },
+  "dependencies": {
+    "otpauth": "^9.4.1",
+    "pino": "^9.9.0",
+    "pino-pretty": "^13.1.1"
+  }
+}
