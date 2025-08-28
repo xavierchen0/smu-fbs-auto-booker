@@ -8,7 +8,7 @@ This tool is built entirely with the following Tech Stack:
 
  [![Tech Stack](https://skillicons.dev/icons?i=js,nodejs,bash)](https://skillicons.dev)
 
-[![Playwright](https://cdn.simpleicons.org/playwright)](https://playwright.dev)
+[![Playwright](https://cdn.jsdelivr.net/gh/devicons/devicon/icons/playwright/playwright-original.svg)](https://playwright.dev)
 
 - Javascript
 - NodeJS
