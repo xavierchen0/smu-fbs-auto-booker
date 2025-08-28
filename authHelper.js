@@ -36,7 +36,10 @@ async function isAuthValid(browser) {
     const page = await context.newPage();
 
     // Test if can access a protected page
-    logger.debug({ url: process.env.BOOKING_PAGE_URL }, "Testing protected page access");
+    logger.debug(
+      { url: process.env.BOOKING_PAGE_URL },
+      "Testing protected page access",
+    );
     await page.goto(process.env.BOOKING_PAGE_URL, { timeout: 30_000 });
 
     // Check for login redirect
@@ -48,7 +51,10 @@ async function isAuthValid(browser) {
     await context.close();
     return isLoggedIn;
   } catch (error) {
-    logger.warn({ error: error.message }, "Auth validation failed, re-authentication required");
+    logger.warn(
+      { error: error.message },
+      "Auth validation failed, re-authentication required",
+    );
     return false;
   }
 }
@@ -62,7 +68,10 @@ async function performAuthentication(browser) {
 
   try {
     // Navigate to booking site login
-    logger.info({ url: process.env.BOOKING_PAGE_URL }, "Navigating to booking site");
+    logger.info(
+      { url: process.env.BOOKING_PAGE_URL },
+      "Navigating to booking site",
+    );
     await page.goto(process.env.BOOKING_PAGE_URL);
     logger.debug({ currentUrl: page.url() }, "Initial page loaded");
 
