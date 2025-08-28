@@ -7,7 +7,7 @@ This tool serves to automate the booking process entirely with your configuratio
 This tool is built entirely with the following Tech Stack:
 
 [![Tech Stack](https://skillicons.dev/icons?i=js,nodejs,bash)](https://skillicons.dev)
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/playwright/playwright-original.svg" width="50" height="50"/>
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/playwright/playwright-original.svg" width="50" height="50" style="background-color: rgb(36, 41, 56); display: inline-block; padding: 8px; border-radius: 4px;"/>
 
 - Javascript
 - NodeJS
