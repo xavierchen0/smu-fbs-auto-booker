@@ -19,17 +19,26 @@ function checkValidBookingDate(bookingDate) {
   // Validity == date parseable by Date.parse() &&
   //             within 2 weeks after today's date
 
+  // Use date-only comparison to avoid timezone/time issues
   const currentDate = new Date();
-  logger.debug({ currentDate, bookingDate }, "Validating booking date");
+  currentDate.setHours(0, 0, 0, 0); // Reset to midnight
+
+  const bookingDateOnly = new Date(bookingDate);
+  bookingDateOnly.setHours(0, 0, 0, 0); // Reset to midnight
+
+  logger.debug(
+    { currentDate, bookingDate: bookingDateOnly },
+    "Validating booking date",
+  );
 
   // Check if booking date is parseable by Date.parse()
-  if (isNaN(bookingDate.valueOf())) {
+  if (isNaN(bookingDateOnly.valueOf())) {
     logger.debug("Invalid booking date format");
     return { isValid: false, message: "Wrong booking date format" };
   }
 
   // Check if booking date is within 2 weeks after today's date
-  const timeDiff = bookingDate.getTime() - currentDate.getTime();
+  const timeDiff = bookingDateOnly.getTime() - currentDate.getTime();
   const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
   logger.debug({ dayDiff }, "Date difference calculated");
@@ -57,7 +66,10 @@ function checkValidBookingDate(bookingDate) {
 }
 
 function checkValidBookingTime(bookingStartTime, bookingEndTime) {
-  logger.debug({ bookingStartTime, bookingEndTime }, "Validating booking times");
+  logger.debug(
+    { bookingStartTime, bookingEndTime },
+    "Validating booking times",
+  );
 
   // Validate start time format (08:30 to 22:00)
   const startTimeRegex = /^(08:30|0[9]:(00|30)|1[0-9]:(00|30)|2[0-2]:(00|30))$/;
@@ -88,11 +100,17 @@ function checkValidBookingTime(bookingStartTime, bookingEndTime) {
   const startTimeInMinutes = startHours * 60 + startMinutes;
   const endTimeInMinutes = endHours * 60 + endMinutes;
 
-  logger.debug({ startTimeInMinutes, endTimeInMinutes }, "Parsed time components");
+  logger.debug(
+    { startTimeInMinutes, endTimeInMinutes },
+    "Parsed time components",
+  );
 
   // Check if start time is before end time
   if (startTimeInMinutes >= endTimeInMinutes) {
-    logger.debug({ startTimeInMinutes, endTimeInMinutes }, "Start time must be before end time");
+    logger.debug(
+      { startTimeInMinutes, endTimeInMinutes },
+      "Start time must be before end time",
+    );
     return {
       isValid: false,
       message: "Booking start time must be before end time",
@@ -109,7 +127,10 @@ function checkValidBookingTime(bookingStartTime, bookingEndTime) {
     };
   }
 
-  logger.debug({ startTime: bookingStartTime, endTime: bookingEndTime }, "Booking times are valid");
+  logger.debug(
+    { startTime: bookingStartTime, endTime: bookingEndTime },
+    "Booking times are valid",
+  );
   return { isValid: true, message: "Booking times are valid" };
 }
 
@@ -136,39 +157,66 @@ async function performBooking(browser) {
     }
 
     // Check valid booking date
-    logger.debug({ bookingDate: process.env.BOOKING_DATE }, "Parsing booking date");
+    logger.debug(
+      { bookingDate: process.env.BOOKING_DATE },
+      "Parsing booking date",
+    );
     const bookingDate = new Date(process.env.BOOKING_DATE);
 
     logger.debug({ parsedBookingDate: bookingDate }, "Running date validation");
     const isBookingDateValidResult = checkValidBookingDate(bookingDate);
 
     if (!isBookingDateValidResult.isValid) {
-      logger.error({ validationMessage: isBookingDateValidResult.message }, "Date validation failed");
+      logger.error(
+        { validationMessage: isBookingDateValidResult.message },
+        "Date validation failed",
+      );
       throw new Error(isBookingDateValidResult.message);
     }
 
-    logger.info({ validationMessage: isBookingDateValidResult.message }, "Date validation passed");
+    logger.info(
+      { validationMessage: isBookingDateValidResult.message },
+      "Date validation passed",
+    );
 
     // Check valid booking times
-    logger.debug({ bookingTimeStart: process.env.BOOKING_TIME_START, bookingTimeEnd: process.env.BOOKING_TIME_END }, "Parsing booking times");
+    logger.debug(
+      {
+        bookingTimeStart: process.env.BOOKING_TIME_START,
+        bookingTimeEnd: process.env.BOOKING_TIME_END,
+      },
+      "Parsing booking times",
+    );
     const bookingTimeStart = process.env.BOOKING_TIME_START;
     const bookingTimeEnd = process.env.BOOKING_TIME_END;
 
-    logger.debug({ startTime: bookingTimeStart, endTime: bookingTimeEnd }, "Running time validation");
+    logger.debug(
+      { startTime: bookingTimeStart, endTime: bookingTimeEnd },
+      "Running time validation",
+    );
     const isBookingTimeValidResult = checkValidBookingTime(
       bookingTimeStart,
       bookingTimeEnd,
     );
 
     if (!isBookingTimeValidResult.isValid) {
-      logger.error({ validationMessage: isBookingTimeValidResult.message }, "Time validation failed");
+      logger.error(
+        { validationMessage: isBookingTimeValidResult.message },
+        "Time validation failed",
+      );
       throw new Error(isBookingTimeValidResult.message);
     }
 
-    logger.info({ validationMessage: isBookingTimeValidResult.message }, "Time validation passed");
+    logger.info(
+      { validationMessage: isBookingTimeValidResult.message },
+      "Time validation passed",
+    );
 
     // Navigate to booking page
-    logger.info({ url: process.env.BOOKING_PAGE_URL }, "Navigating to booking page");
+    logger.info(
+      { url: process.env.BOOKING_PAGE_URL },
+      "Navigating to booking page",
+    );
     await page.goto(process.env.BOOKING_PAGE_URL);
 
     // Click on the readonly date input to trigger date picker
@@ -186,7 +234,10 @@ async function performBooking(browser) {
     // Convert to Date object for today's date
     const todaysDate = new Date();
 
-    logger.debug({ todaysDate, bookingDate }, "Checking calendar navigation needs");
+    logger.debug(
+      { todaysDate, bookingDate },
+      "Checking calendar navigation needs",
+    );
 
     // SMU only allows booking of rooms 2 weeks in advance
     //   Check if we need to click next to select the date we want
@@ -208,13 +259,16 @@ async function performBooking(browser) {
 
     // Click and select the booking date in booking picker
     const bookingDateDDMthYYYY =
-      bookingDate.getDate().toString() +
+      bookingDate.getDate().toString().padStart(2, "0") +
       "-" +
       monthIndexMap.get(bookingDate.getMonth()).substring(0, 3) +
       "-" +
       bookingDate.getFullYear().toString();
-    
-    logger.debug({ formattedDate: bookingDateDDMthYYYY }, "Selecting date in calendar");
+
+    logger.debug(
+      { formattedDate: bookingDateDDMthYYYY },
+      "Selecting date in calendar",
+    );
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -224,7 +278,10 @@ async function performBooking(browser) {
       .click();
 
     // Enter user chosen facility into search to narrow down
-    logger.debug({ facility: process.env.BOOKING_FACILITY }, "Searching for facility");
+    logger.debug(
+      { facility: process.env.BOOKING_FACILITY },
+      "Searching for facility",
+    );
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -297,7 +354,10 @@ async function performBooking(browser) {
       .toLocaleString("en-US")
       .replaceAll(",", "");
 
-    logger.debug({ startTime: optionBookingStartDateTime }, "Setting booking start time");
+    logger.debug(
+      { startTime: optionBookingStartDateTime },
+      "Setting booking start time",
+    );
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -316,7 +376,10 @@ async function performBooking(browser) {
       .toLocaleString("en-US")
       .replaceAll(",", "");
 
-    logger.debug({ endTime: optionBookingEndDateTime }, "Setting booking end time");
+    logger.debug(
+      { endTime: optionBookingEndDateTime },
+      "Setting booking end time",
+    );
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -438,10 +501,19 @@ async function performBooking(browser) {
       logger.info("Booking confirmation skipped (debug mode)");
     }
 
+    // Delay before clicking confirm to allow time for page to confirm
+    await page.waitForTimeout(10000);
     await context.close();
     return { success: true, message: "Booking process completed" };
   } catch (error) {
-    logger.error({ error: error.message, stack: error.stack, bookingDate: process.env.BOOKING_DATE }, "Booking process failed");
+    logger.error(
+      {
+        error: error.message,
+        stack: error.stack,
+        bookingDate: process.env.BOOKING_DATE,
+      },
+      "Booking process failed",
+    );
 
     await context.close();
     return { success: false, message: error.stack };
