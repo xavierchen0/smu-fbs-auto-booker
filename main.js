@@ -35,7 +35,10 @@ async function main() {
         cause: bookingResult.message,
       });
     }
-    logger.info({ bookingResult: bookingResult.message }, "Booking completed successfully");
+    logger.info(
+      { bookingResult: bookingResult.message },
+      "Booking completed successfully",
+    );
 
     await browser.close();
     logger.info("Booking automation run completed");
