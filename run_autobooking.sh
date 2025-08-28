@@ -3,5 +3,7 @@
 # Run main script
 node --env-file=.env main.js
 
-# Update booking date
-node --env-file=.env updateBookingDate.js
+# Only update booking date if main.js succeeded
+if [ $? -eq 0 ]; then
+    node --env-file=.env updateBookingDate.js
+fi
