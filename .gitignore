@@ -6,3 +6,6 @@ playwright/.auth
 
 # Logging files
 logs/
+
+# Node modules
+node_modules/
