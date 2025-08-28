@@ -18,7 +18,7 @@ This tool is built entirely with the following Tech Stack:
 # Installation
 1. Ensure you have NodeJS installed [link to installation guide](https://nodejs.org/en/download/)
 2. Clone the repo to local
-3. cd to root directory
+3. `cd` to root directory
 4. run `npm install`
 
 # Usage
