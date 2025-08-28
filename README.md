@@ -6,8 +6,9 @@ This tool serves to automate the booking process entirely with your configuratio
 # Tech Stack
 This tool is built entirely with the following Tech Stack:
 
- [![Tech Stack](https://skillicons.dev/icons?i=js,nodejs,bash)](https://skillicons.dev) ![Playwright](https://logo.svgcdn.com/l/playwright-plain.svg)
+ [![Tech Stack](https://skillicons.dev/icons?i=js,nodejs,bash)](https://skillicons.dev)
 
+[![Playwright](https://icons.iconarchive.com/icons/simpleicons-team/simple/128/playwright-icon.png)](https://playwright.dev)
 
 - Javascript
 - NodeJS
