@@ -17,6 +17,13 @@ This tool is built entirely with the following Tech Stack:
 3. cd to root directory
 4. run `npm install`
 
+# Usage
+To run the script, just run at the root directory
+
+```bash
+node --env-file=.env main.js
+```
+
 # How does it work?
 1. The tool launches a profileless browser and logs you in via SMU login page
     - The FBS site would either redirect you to log in directly via SMU login page, or redirect you to an intermediate page asking you to open your Microsoft Authenticator app and enter the code displayed on the web page in the app itself.
