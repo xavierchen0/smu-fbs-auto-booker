@@ -96,6 +96,8 @@ async function performAuthentication(browser) {
         url.toString().includes("login.microsoftonline.com"),
     );
 
+    await page.waitForTimeout(5000);
+
     const currentUrl = page.url();
     logger.debug({ currentUrl }, "Reached login page");
 
