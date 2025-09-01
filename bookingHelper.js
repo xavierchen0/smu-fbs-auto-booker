@@ -164,15 +164,7 @@ async function performBooking(browser) {
     }
 
     // Check valid booking date
-    let bookingDate;
-    if (process.env.IS_CLOUD.toLowerCase() === "false") {
-      bookingDate = new Date(process.env.BOOKING_DATE);
-    } else if (process.env.IS_CLOUD.toLowerCase() === "true") {
-      const todayDate = new Date();
-      todayDate.setHours(0, 0, 0, 0);
-      bookingDate = new Date(todayDate);
-      bookingDate.setDate(todayDate.getDate() + 14);
-    }
+    const bookingDate = new Date(process.env.BOOKING_DATE);
     logger.debug({ bookingDate: bookingDate }, "Parsing booking date");
 
     logger.debug({ parsedBookingDate: bookingDate }, "Running date validation");
