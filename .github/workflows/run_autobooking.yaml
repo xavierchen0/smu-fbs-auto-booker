@@ -3,6 +3,7 @@ name: Run Autobooking Script
 on:
   schedule:
     - cron: '0 0 * * 1-6'
+  workflow_dispatch:
 
 jobs:
   run-script:
