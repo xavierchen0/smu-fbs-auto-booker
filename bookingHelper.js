@@ -142,9 +142,16 @@ async function performBooking(browser) {
   const page = await context.newPage();
 
   try {
-    // Check if booking date is specified
-    if (!process.env.BOOKING_DATE) {
-      throw new Error("BOOKING_DATE environment variable is required");
+    // Check if IS_CLOUD env var is specified
+    if (!process.env.IS_CLOUD) {
+      throw new Error("IS_CLOUD environment variable is required");
+    }
+
+    // Check if booking date is specified if IS_CLOUD == false
+    if (process.env.IS_CLOUD === "false") {
+      if (!process.env.BOOKING_DATE) {
+        throw new Error("BOOKING_DATE environment variable is required");
+      }
     }
 
     // Check if booking time start and end are specified
@@ -157,11 +164,16 @@ async function performBooking(browser) {
     }
 
     // Check valid booking date
-    logger.debug(
-      { bookingDate: process.env.BOOKING_DATE },
-      "Parsing booking date",
-    );
-    const bookingDate = new Date(process.env.BOOKING_DATE);
+    let bookingDate;
+    if (process.env.IS_CLOUD.toLowerCase() === "false") {
+      bookingDate = new Date(process.env.BOOKING_DATE);
+    } else if (process.env.IS_CLOUD.toLowerCase() === "true") {
+      const todayDate = new Date();
+      todayDate.setHours(0, 0, 0, 0);
+      bookingDate = new Date(todayDate);
+      bookingDate.setDate(todayDate.getDate() + 14);
+    }
+    logger.debug({ bookingDate: bookingDate }, "Parsing booking date");
 
     logger.debug({ parsedBookingDate: bookingDate }, "Running date validation");
     const isBookingDateValidResult = checkValidBookingDate(bookingDate);
