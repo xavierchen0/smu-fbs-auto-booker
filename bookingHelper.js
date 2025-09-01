@@ -142,16 +142,9 @@ async function performBooking(browser) {
   const page = await context.newPage();
 
   try {
-    // Check if IS_CLOUD env var is specified
-    if (!process.env.IS_CLOUD) {
-      throw new Error("IS_CLOUD environment variable is required");
-    }
-
-    // Check if booking date is specified if IS_CLOUD == false
-    if (process.env.IS_CLOUD === "false") {
-      if (!process.env.BOOKING_DATE) {
-        throw new Error("BOOKING_DATE environment variable is required");
-      }
+    // Check if booking date is specified
+    if (!process.env.BOOKING_DATE) {
+      throw new Error("BOOKING_DATE environment variable is required");
     }
 
     // Check if booking time start and end are specified
