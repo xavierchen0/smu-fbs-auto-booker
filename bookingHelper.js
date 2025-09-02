@@ -142,6 +142,11 @@ async function performBooking(browser) {
   const page = await context.newPage();
 
   try {
+    // Check if there is IS_GITHUB_ACTION
+    if (!process.env.IS_GITHUB_ACTION) {
+      throw new Error("IS_GITHUB_ACTION environment variable is required");
+    }
+
     // Check if booking date is specified
     if (!process.env.BOOKING_DATE) {
       throw new Error("BOOKING_DATE environment variable is required");
@@ -157,7 +162,18 @@ async function performBooking(browser) {
     }
 
     // Check valid booking date
-    const bookingDate = new Date(process.env.BOOKING_DATE);
+    let bookingDate;
+    if (process.env.IS_GITHUB_ACTION.toLowerCase() === "false") {
+      bookingDate = new Date(process.env.BOOKING_DATE);
+    } else if (process.env.IS_GITHUB_ACTION.toLowerCase() === "true") {
+      // Get current date in Singapore timezone
+      const todayDate = new Date();
+      const singaporeDate = new Date(todayDate.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
+      // Set to midnight
+      singaporeDate.setHours(0, 0, 0, 0);
+      bookingDate = new Date(singaporeDate);
+      bookingDate.setDate(bookingDate.getDate() + 14);
+    }
     logger.debug({ bookingDate: bookingDate }, "Parsing booking date");
 
     logger.debug({ parsedBookingDate: bookingDate }, "Running date validation");
@@ -228,11 +244,12 @@ async function performBooking(browser) {
 
     logger.debug("Date picker opened");
 
-    // Convert to Date object for today's date
+    // Convert to Date object for today's date in Singapore timezone
     const todaysDate = new Date();
+    const singaporeTodaysDate = new Date(todaysDate.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
 
     logger.debug(
-      { todaysDate, bookingDate },
+      { todaysDate: singaporeTodaysDate, bookingDate },
       "Checking calendar navigation needs",
     );
 
@@ -240,7 +257,7 @@ async function performBooking(browser) {
     //   Check if we need to click next to select the date we want
     //   This is usually the case when the date we want is in the
     //   following month of today's month
-    const monthDiff = bookingDate.getMonth() - todaysDate.getMonth();
+    const monthDiff = bookingDate.getMonth() - singaporeTodaysDate.getMonth();
     logger.debug({ monthDiff }, "Calendar month difference calculated");
 
     if (monthDiff === 1) {
