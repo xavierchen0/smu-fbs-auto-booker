@@ -32,11 +32,11 @@ jobs:
     - name: Create .env with Github Secrets and run script
       run: |
         touch .env
-        echo $IS_GITHUB_ACTION
+        echo "this is github action env var $IS_GITHUB_ACTION"
         echo IS_GITHUB_ACTION=$IS_GITHUB_ACTION >> .env
         echo IS_BOOKING_DEBUG=$IS_BOOKING_DEBUG >> .env
         echo LOG_LEVEL=$LOG_LEVEL >> .env
-        echo $BOOKING_PAGE_URL
+        echo "this is booking page url $BOOKING_PAGE_URL"
         echo BOOKING_PAGE_URL=$BOOKING_PAGE_URL >> .env
         echo MSFT_EMAIL=$MSFT_EMAIL >> .env
         echo MSFT_PWD=$MSFT_PWD >> .env
