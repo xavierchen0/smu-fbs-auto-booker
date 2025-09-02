@@ -12,7 +12,6 @@ async function main() {
     logger.info(
       `============================================🚀 ${todayDate.toLocaleString("en-GB")} Start Booking Run===========================================`,
     );
-    console.log("IS_BOOKING_DEBUG", process.env.IS_BOOKING_DEBUG);
 
     // Launch browser
     // NOTE: Change to headless true when not debugging
