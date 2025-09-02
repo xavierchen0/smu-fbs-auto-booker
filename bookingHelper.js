@@ -1,6 +1,6 @@
 const logger =
   process.env.CI === "true"
-    ? { info: console.log, error: console.error, warn: console.warn }
+    ? { info: console.log, error: console.error, warn: console.warn, debug: console.log }
     : require("./logger");
 
 const monthIndexMap = new Map([

@@ -3,7 +3,7 @@ const { authenticateIfNeeded } = require("./authHelper");
 const { performBooking } = require("./bookingHelper");
 const logger =
   process.env.CI === "true"
-    ? { info: console.log, error: console.error, warn: console.warn }
+    ? { info: console.log, error: console.error, warn: console.warn, debug: console.log }
     : require("./logger");
 
 async function main() {
