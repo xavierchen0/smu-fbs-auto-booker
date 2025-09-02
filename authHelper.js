@@ -1,5 +1,8 @@
 const fs = require("fs");
-const logger = require("./logger");
+const logger =
+  process.env.CI === "true"
+    ? { info: console.log, error: console.error, warn: console.warn }
+    : require("./logger");
 
 const authFile = process.env.STORAGESTATE_FP;
 

@@ -1,9 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const logger = require("./logger");
-
 const envPath = path.join(__dirname, ".env");
 let env = fs.readFileSync(envPath, "utf-8");
+const logger =
+  process.env.CI === "true"
+    ? { info: console.log, error: console.error, warn: console.warn }
+    : require("./logger");
 
 // TODO: improve logging
 // Extract current date

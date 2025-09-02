@@ -1,4 +1,7 @@
-const logger = require("./logger");
+const logger =
+  process.env.CI === "true"
+    ? { info: console.log, error: console.error, warn: console.warn }
+    : require("./logger");
 
 const monthIndexMap = new Map([
   [0, "january"],
@@ -168,7 +171,9 @@ async function performBooking(browser) {
     } else if (process.env.IS_GITHUB_ACTION.toLowerCase() === "true") {
       // Get current date in Singapore timezone
       const todayDate = new Date();
-      const singaporeDate = new Date(todayDate.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
+      const singaporeDate = new Date(
+        todayDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }),
+      );
       // Set to midnight
       singaporeDate.setHours(0, 0, 0, 0);
       bookingDate = new Date(singaporeDate);
@@ -246,7 +251,9 @@ async function performBooking(browser) {
 
     // Convert to Date object for today's date in Singapore timezone
     const todaysDate = new Date();
-    const singaporeTodaysDate = new Date(todaysDate.toLocaleString("en-US", {timeZone: "Asia/Singapore"}));
+    const singaporeTodaysDate = new Date(
+      todaysDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }),
+    );
 
     logger.debug(
       { todaysDate: singaporeTodaysDate, bookingDate },
