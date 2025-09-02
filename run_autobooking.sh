@@ -2,7 +2,7 @@
 
 # Run main script
 echo "Running main.js"
-node env-file=.env main.js
+node --env-file=.env main.js
 echo "main.js Finished Successfully"
 
 # Only update booking date if main.js succeeded
