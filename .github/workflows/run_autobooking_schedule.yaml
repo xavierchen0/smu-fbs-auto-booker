@@ -30,6 +30,9 @@ jobs:
 
     - name: DEBUG echo environment variables
       run: echo "${{ secrets.BOOKING_PAGE_URL }}"; echo "${{ secrets.STORAGESTATE_FP }}"
+      env:
+        BOOKING_PAGE_URL: ${{ secrets.BOOKING_PAGE_URL }}
+        STORAGESTATE_FP: ${{ secrets.STORAGESTATE_FP }}
 
     - name: Run the main script
       run: node main.js
