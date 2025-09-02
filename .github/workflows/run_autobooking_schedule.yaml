@@ -28,8 +28,5 @@ jobs:
     - name: Install system dependencies for Playwright
       run: npx playwright install-deps chromium
 
-    - name: Make bash script executable
-      run: chmod +x ./run_autobooking.sh
-
-    - name: Run bash script
-      run: ./run_autobooking.sh.sh
+    - name: Run the main script
+      run: node main.js
