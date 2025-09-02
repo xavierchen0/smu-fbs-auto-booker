@@ -96,17 +96,16 @@ async function performAuthentication(browser) {
     await page.locator("#idSIButton9").click();
     logger.debug("Next button clicked");
 
-    // NOTE: might delete later
     // Wait until we reach SMU's login page
-    // logger.debug("Waiting for login page redirect");
-    // await page.waitForURL(
-    //   (url) =>
-    //     url.toString().includes("login2.smu.edu.sg") ||
-    //     url.toString().includes("login.microsoftonline.com"),
-    // );
+    logger.debug("Waiting for login page redirect");
+    await page.waitForURL(
+      (url) =>
+        url.toString().includes("login2.smu.edu.sg") ||
+        url.toString().includes("login.microsoftonline.com"),
+    );
 
     // WARN: might not necessarily work in all scenarios
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(5000);
 
     const currentUrl = page.url();
     logger.debug({ currentUrl }, "Reached login page");
