@@ -1,7 +1,10 @@
 const { chromium } = require("playwright");
 const { authenticateIfNeeded } = require("./authHelper");
 const { performBooking } = require("./bookingHelper");
-const logger = require("./logger");
+const logger =
+  process.env.IS_GITHUB_ACTION === "false"
+    ? { info: console.log, error: console.error, warn: console.warn }
+    : require("./logger");
 
 async function main() {
   try {
