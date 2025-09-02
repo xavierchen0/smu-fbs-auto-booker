@@ -130,11 +130,37 @@ async function performAuthentication(browser) {
     await page.locator("#submitButton").click();
     logger.debug("Login form submitted");
 
+    // NOTE: fix bug for github action
+    // Wait for potential Microsoft redirect after SMU login
+    logger.debug("Waiting for potential Microsoft redirect");
+    try {
+      await page.waitForURL(
+        (url) =>
+          url.toString().includes("login.microsoftonline.com") ||
+          url.toString().includes(process.env.BOOKING_PAGE_URL),
+        { timeout: 10000, waitUntil: "commit" },
+      );
+
+      const currentUrl = page.url();
+      logger.debug({ currentUrl }, "After SMU login redirect");
+
+      // If redirected back to Microsoft, wait for final redirect to home
+      if (currentUrl.includes("login.microsoftonline.com")) {
+        logger.debug("Handling Microsoft redirect after SMU login");
+        await page.waitForURL(
+          (url) => url.toString().includes(process.env.BOOKING_PAGE_URL),
+          { timeout: 20000, waitUntil: "commit" },
+        );
+      }
+    } catch (error) {
+      logger.debug({ error: error.message }, "Error during redirect handling");
+    }
+
     // NOTE: adapted waitForURL
     // Wait for successful redirect to SMU's FBS homepage
     const expectedUrl = process.env.BOOKING_PAGE_URL + "/home";
-    logger.debug({ expectedUrl }, "Waiting for auth redirect");
-    await page.waitForURL(expectedUrl, { timeout: 10000, waitUntil: "commit" });
+    logger.debug({ expectedUrl }, "Waiting for final auth redirect to home");
+    await page.waitForURL(expectedUrl, { timeout: 15000, waitUntil: "commit" });
     logger.info({ finalUrl: page.url() }, "Authentication successful");
 
     // Save authentication state
