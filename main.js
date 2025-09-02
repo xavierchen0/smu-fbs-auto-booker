@@ -45,9 +45,9 @@ async function main() {
 
     await browser.close();
     logger.info("Booking automation run completed");
-    
+
     // Close logger if it has a close method (Pino logger)
-    if (logger.flush && typeof logger.flush === 'function') {
+    if (logger.flush && typeof logger.flush === "function") {
       logger.flush();
     }
   } catch (error) {
@@ -61,7 +61,7 @@ async function main() {
     );
 
     // Close logger if it has a flush method (Pino logger)
-    if (logger.flush && typeof logger.flush === 'function') {
+    if (logger.flush && typeof logger.flush === "function") {
       logger.flush();
     }
 
