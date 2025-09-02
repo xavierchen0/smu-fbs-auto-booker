@@ -43,11 +43,5 @@ jobs:
     - name: Install system dependencies for Playwright
       run: npx playwright install-deps chromium
 
-    - name: Debug specific environment variables
-      run: |
-        echo "IS_BOOKING_DEBUG: '$IS_BOOKING_DEBUG'"
-        echo "IS_GITHUB_ACTION: '$IS_GITHUB_ACTION'"
-        echo "CI: '$CI'"
-
     - name: Run the main script
       run: node main.js
