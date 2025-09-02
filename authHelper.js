@@ -130,6 +130,9 @@ async function performAuthentication(browser) {
     await page.locator("#submitButton").click();
     logger.debug("Login form submitted");
 
+    // WARN: might not necessarily work in all scenarios
+    await page.waitForTimeout(10000);
+
     // Wait for successful redirect to SMU's FBS homepage
     const expectedUrl = process.env.BOOKING_PAGE_URL + "/home";
     logger.debug({ expectedUrl }, "Waiting for auth redirect");
