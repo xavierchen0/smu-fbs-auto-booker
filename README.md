@@ -116,6 +116,17 @@ Paste the command below into the cron table file, edit `<root dir of project>` a
 
 The bash script `run_autobooking.sh` runs `main.js` (the main auto-booking script) and `updateBookingDate.js` (increment the env variable `$BOOKING_DATE` by 1 day, and if it is on a Sunday, increment it again to a Monday).
 
+# Why not schedule cron job with Github Action?
+An attempt was made to see if it is possible to run the cron job with Github Actions rather than setting up a local cron job. A local cron job is not necessarily the most effective way to operate this tool simply because it requires your computer to be open and with an internet connection.
+
+The main issue that prevented me from fully implementing this tool with Github Action is because of Microsoft Authentication. In Github Action's CI environment, upon clicking the anchor element at the login page, which is supposed to redirect you to the SMU FBS home page, but instead it redirects you to `login.microsoftonline.com/login.srf`. This does not happen when you try to run it locally.
+
+I believe it is Microsoft way to prevent automated logins, but I am not entirely sure.
+
+Potential solutions that have been explored:
+1. Trying to set the Auth Token, but this is not possible because you are not admin of SMU FBS.
+2. Directly set the login details into the cookie so we can just log in once and avoid logging in again subsequently, but this will not work because cookies do expire, and you will have to re-run the script to log in and re-insert the login details into the cookies again. Re-running the script requires running the script locally because the script does not work in Github Action's CI environment.
+
 # Disclaimer
 
 ## Disclaimer 1
