@@ -22,23 +22,27 @@ function validateEnvironment() {
 // Check if stored auth is still valid
 async function isAuthValid(browser) {
   try {
-    validateEnvironment();
     logger.info("Validating stored authentication state");
+
+    validateEnvironment();
 
     if (!authFile || !fs.existsSync(authFile)) {
       logger.info("No authentication file found");
+
       return false;
     }
 
-    logger.debug({ authFile }, "Loading stored auth state");
+    logger.info({ authFile }, "Loading stored auth state");
+
     const context = await browser.newContext({ storageState: authFile });
     const page = await context.newPage();
 
     // Test if can access a protected page
-    logger.debug(
+    logger.info(
       { url: process.env.BOOKING_PAGE_URL },
       "Testing protected page access",
     );
+
     await page.goto(process.env.BOOKING_PAGE_URL, { timeout: 30_000 });
 
     // Check for login redirect
@@ -48,17 +52,18 @@ async function isAuthValid(browser) {
     logger.info({ currentUrl, isLoggedIn }, "Auth validation completed");
 
     await context.close();
+
     return isLoggedIn;
   } catch (error) {
     logger.warn(
       { error: error.message },
       "Auth validation failed, re-authentication required",
     );
+
     return false;
   }
 }
 
-// TODO: add logging
 // Perform new authentication
 async function performAuthentication(browser) {
   logger.info("Starting authentication flow");
@@ -68,27 +73,34 @@ async function performAuthentication(browser) {
   try {
     // Navigate to booking site login
     logger.info(
-      { url: process.env.BOOKING_PAGE_URL },
+      { bookingPageUrl: process.env.BOOKING_PAGE_URL },
       "Navigating to booking site",
     );
+
     await page.goto(process.env.BOOKING_PAGE_URL);
-    logger.debug({ currentUrl: page.url() }, "Initial page loaded");
+
+    logger.info({ currentUrl: page.url() }, "Initial page loaded");
 
     // Perform Microsoft OAuth
-    logger.debug("Starting Microsoft OAuth flow");
+    logger.info("Starting Microsoft OAuth flow");
 
     // Enter email
-    logger.debug({ selector: "#i0116" }, "Entering email address");
+    logger.info({ selector: "#i0116" }, "Entering email address");
+
     await page.locator("#i0116").fill(process.env.MSFT_EMAIL);
-    logger.debug("Email address entered");
+
+    logger.info("Email address entered");
 
     // Click next
-    logger.debug({ selector: "#idSIButton9" }, "Clicking Next");
+    logger.info({ selector: "#idSIButton9" }, "Clicking Next");
+
     await page.locator("#idSIButton9").click();
-    logger.debug("Next button clicked");
+
+    logger.info("Next button clicked");
 
     // Wait until we reach SMU's login page
-    logger.debug("Waiting for login page redirect");
+    logger.info("Waiting for login page redirect");
+
     await page.waitForURL(
       (url) =>
         url.toString().includes("login2.smu.edu.sg") ||
@@ -99,68 +111,56 @@ async function performAuthentication(browser) {
     await page.waitForTimeout(5000);
 
     const currentUrl = page.url();
-    logger.debug({ currentUrl }, "Reached login page");
+
+    logger.info({ currentUrl }, "Reached login page");
 
     if (currentUrl.includes("login.microsoftonline")) {
-      logger.debug("Detected Microsoft login page");
+      logger.info("Detected Microsoft login page");
+
       await page
         .getByRole("link", { name: "Use your password instead" })
         .click();
+
       await page.waitForURL("**/login2.smu.edu.sg/**");
     }
 
-    logger.debug({ currentUrl: page.url() }, "On SMU login page");
+    logger.info({ currentUrl: page.url() }, "On SMU login page");
 
     // Enter password
-    logger.debug({ selector: "#passwordInput" }, "Entering password");
+    logger.info({ selector: "#passwordInput" }, "Entering password");
+
     await page.locator("#passwordInput").fill(process.env.MSFT_PWD);
-    logger.debug("Password entered");
+
+    logger.info("Password entered");
 
     // Click submit button
-    logger.debug({ selector: "#submitButton" }, "Submitting login");
+    logger.info({ selector: "#submitButton" }, "Submitting login");
+
     await page.locator("#submitButton").click();
-    logger.debug("Login form submitted");
 
-    // NOTE: fix bug for github action
-    // Wait for potential Microsoft redirect after SMU login
-    logger.debug("Waiting for potential Microsoft redirect");
-    try {
-      await page.waitForURL(
-        (url) =>
-          url.toString().includes("login.microsoftonline.com") ||
-          url.toString().includes(process.env.BOOKING_PAGE_URL),
-        { timeout: 10000, waitUntil: "commit" },
-      );
-
-      const currentUrl = page.url();
-      logger.debug({ currentUrl }, "After SMU login redirect");
-
-      // If redirected back to Microsoft, wait for final redirect to home
-      if (currentUrl.includes("login.microsoftonline.com")) {
-        logger.debug("Handling Microsoft redirect after SMU login");
-        await page.waitForURL(
-          (url) => url.toString().includes(process.env.BOOKING_PAGE_URL),
-          { timeout: 20000, waitUntil: "commit" },
-        );
-      }
-    } catch (error) {
-      logger.debug({ error: error.message }, "Error during redirect handling");
-    }
+    logger.info("Login form submitted");
 
     // NOTE: adapted waitForURL
     // Wait for successful redirect to SMU's FBS homepage
     const expectedUrl = process.env.BOOKING_PAGE_URL + "/home";
-    logger.debug({ expectedUrl }, "Waiting for final auth redirect to home");
+
+    logger.info({ expectedUrl }, "Waiting for final auth redirect to home");
+
     await page.waitForURL(expectedUrl, { timeout: 15000, waitUntil: "commit" });
+
     logger.info({ finalUrl: page.url() }, "Authentication successful");
 
     // Save authentication state
-    logger.debug({ authFile }, "Saving auth state");
-    await context.storageState({ path: authFile });
-    logger.debug("Auth state saved");
+    logger.info({ authFile }, "Saving auth state");
 
-    logger.debug("Closing auth context");
+    await context.storageState({ path: authFile });
+
+    logger.info("Auth state saved");
+
+    logger.info("Closing auth context");
+
     await context.close();
+
     logger.info("Authentication completed");
 
     return { success: true, message: "🔐 New authentication completed" };
@@ -175,7 +175,7 @@ async function performAuthentication(browser) {
       "Authentication failed",
     );
 
-    logger.debug("Closing auth context after error");
+    logger.info("Closing auth context after error");
     await context.close();
 
     return { success: false, message: error.stack };
@@ -184,16 +184,18 @@ async function performAuthentication(browser) {
 
 // Main authentication function
 async function authenticateIfNeeded(browser) {
-  logger.debug("Checking authentication requirement");
+  logger.info("Checking authentication requirement");
 
   // Check if existing auth is valid
   if (await isAuthValid(browser)) {
     logger.info("Using existing authentication");
+
     return { success: true, message: "🔐 Use existing valid authentication" };
   }
 
   // Authentication expired or missing, perform new auth
   logger.info("Authentication required, starting new flow");
+
   return await performAuthentication(browser);
 }
 
