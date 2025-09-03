@@ -3,6 +3,9 @@ Do you have your favourite SMU room that you always study or do project meetings
 
 This tool serves to automate the booking process entirely with your configuration specified in a `.env` file 🚀!
 
+![smu_fbs_autobooking_demo_4](https://github.com/user-attachments/assets/7372fb12-1b82-42e2-bd3b-7fb27c98e3be)
+
+
 # Tech Stack
 This tool is built entirely with the following Tech Stack:
 
