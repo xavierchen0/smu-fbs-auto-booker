@@ -163,7 +163,10 @@ async function performBooking(browser) {
     validateEnvironment();
 
     // Check valid booking date
-    logger.info({ bookingDate: bookingDate }, "Parsing booking date");
+    logger.info(
+      { bookingDate: process.env.BOOKING_DATE },
+      "Parsing booking date",
+    );
 
     const bookingDate = new Date(process.env.BOOKING_DATE);
 
