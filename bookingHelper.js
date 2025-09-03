@@ -1,7 +1,4 @@
-const logger =
-  process.env.CI === "true"
-    ? { info: console.log, error: console.error, warn: console.warn, debug: console.log }
-    : require("./logger");
+const logger = require("./logger");
 
 const monthIndexMap = new Map([
   [0, "january"],
@@ -17,6 +14,18 @@ const monthIndexMap = new Map([
   [10, "november"],
   [11, "december"],
 ]);
+
+// Validate required environment variables
+function validateEnvironment() {
+  const required = ["BOOKING_DATE", "BOOKING_TIME_START", "BOOKING_TIME_END"];
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`,
+    );
+  }
+}
 
 function checkValidBookingDate(bookingDate) {
   // Validity == date parseable by Date.parse() &&
@@ -36,7 +45,7 @@ function checkValidBookingDate(bookingDate) {
 
   // Check if booking date is parseable by Date.parse()
   if (isNaN(bookingDateOnly.valueOf())) {
-    logger.debug("Invalid booking date format");
+    logger.info("Invalid booking date format");
     return { isValid: false, message: "Wrong booking date format" };
   }
 
@@ -44,12 +53,13 @@ function checkValidBookingDate(bookingDate) {
   const timeDiff = bookingDateOnly.getTime() - currentDate.getTime();
   const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-  logger.debug({ dayDiff }, "Date difference calculated");
+  logger.info({ dayDiff }, "Date difference calculated");
 
   //   Check if negative dayDiff
   //     Must be ahead of today's date
   if (dayDiff < 0) {
-    logger.debug({ dayDiff }, "Booking date is in the past");
+    logger.info({ dayDiff }, "Booking date is in the past");
+
     return {
       isValid: false,
       message: "Booking date cannot be before today's date",
@@ -57,27 +67,26 @@ function checkValidBookingDate(bookingDate) {
   }
 
   if (dayDiff > 14) {
-    logger.debug({ dayDiff }, "Booking date exceeds 14-day limit");
+    logger.info({ dayDiff }, "Booking date exceeds 14-day limit");
     return {
       isValid: false,
       message: "Booking date must be within 14 days of today's date",
     };
   }
 
-  logger.debug({ dayDiff }, "Booking date is valid");
+  logger.info({ dayDiff }, "Booking date is valid");
+
   return { isValid: true, message: "Booking date is valid" };
 }
 
 function checkValidBookingTime(bookingStartTime, bookingEndTime) {
-  logger.debug(
-    { bookingStartTime, bookingEndTime },
-    "Validating booking times",
-  );
+  logger.info({ bookingStartTime, bookingEndTime }, "Validating booking times");
 
   // Validate start time format (08:30 to 22:00)
   const startTimeRegex = /^(08:30|0[9]:(00|30)|1[0-9]:(00|30)|2[0-2]:(00|30))$/;
   if (!startTimeRegex.test(bookingStartTime)) {
-    logger.debug({ bookingStartTime }, "Invalid start time format");
+    logger.info({ bookingStartTime }, "Invalid start time format");
+
     return {
       isValid: false,
       message:
@@ -88,7 +97,8 @@ function checkValidBookingTime(bookingStartTime, bookingEndTime) {
   // Validate end time format (09:00 to 22:30)
   const endTimeRegex = /^(0[9]:(00|30)|1[0-9]:(00|30)|2[0-2]:(00|30))$/;
   if (!endTimeRegex.test(bookingEndTime)) {
-    logger.debug({ bookingEndTime }, "Invalid end time format");
+    logger.info({ bookingEndTime }, "Invalid end time format");
+
     return {
       isValid: false,
       message:
@@ -103,17 +113,18 @@ function checkValidBookingTime(bookingStartTime, bookingEndTime) {
   const startTimeInMinutes = startHours * 60 + startMinutes;
   const endTimeInMinutes = endHours * 60 + endMinutes;
 
-  logger.debug(
+  logger.info(
     { startTimeInMinutes, endTimeInMinutes },
     "Parsed time components",
   );
 
   // Check if start time is before end time
   if (startTimeInMinutes >= endTimeInMinutes) {
-    logger.debug(
+    logger.info(
       { startTimeInMinutes, endTimeInMinutes },
       "Start time must be before end time",
     );
+
     return {
       isValid: false,
       message: "Booking start time must be before end time",
@@ -122,15 +133,17 @@ function checkValidBookingTime(bookingStartTime, bookingEndTime) {
 
   // Check if booking duration is within 4 hours
   const durationInHours = (endTimeInMinutes - startTimeInMinutes) / 60;
+
   if (durationInHours > 4) {
-    logger.debug({ durationInHours }, "Booking duration exceeds 4-hour limit");
+    logger.info({ durationInHours }, "Booking duration exceeds 4-hour limit");
+
     return {
       isValid: false,
       message: "Booking duration cannot exceed 4 hours",
     };
   }
 
-  logger.debug(
+  logger.info(
     { startTime: bookingStartTime, endTime: bookingEndTime },
     "Booking times are valid",
   );
@@ -145,43 +158,17 @@ async function performBooking(browser) {
   const page = await context.newPage();
 
   try {
-    // Check if there is IS_GITHUB_ACTION
-    if (!process.env.IS_GITHUB_ACTION) {
-      throw new Error("IS_GITHUB_ACTION environment variable is required");
-    }
-
-    // Check if booking date is specified
-    if (!process.env.BOOKING_DATE) {
-      throw new Error("BOOKING_DATE environment variable is required");
-    }
-
-    // Check if booking time start and end are specified
-    if (!process.env.BOOKING_TIME_START) {
-      throw new Error("BOOKING_TIME_START environment variable is required");
-    }
-
-    if (!process.env.BOOKING_TIME_END) {
-      throw new Error("BOOKING_TIME_END environment variable is required");
-    }
+    // Check if BOOKING_DATE, BOOKING_TIME_START, BOOKING_TIME_END
+    //   required env var is availabe
+    validateEnvironment();
 
     // Check valid booking date
-    let bookingDate;
-    if (process.env.IS_GITHUB_ACTION.toLowerCase() === "false") {
-      bookingDate = new Date(process.env.BOOKING_DATE);
-    } else if (process.env.IS_GITHUB_ACTION.toLowerCase() === "true") {
-      // Get current date in Singapore timezone
-      const todayDate = new Date();
-      const singaporeDate = new Date(
-        todayDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }),
-      );
-      // Set to midnight
-      singaporeDate.setHours(0, 0, 0, 0);
-      bookingDate = new Date(singaporeDate);
-      bookingDate.setDate(bookingDate.getDate() + 14);
-    }
-    logger.debug({ bookingDate: bookingDate }, "Parsing booking date");
+    logger.info({ bookingDate: bookingDate }, "Parsing booking date");
 
-    logger.debug({ parsedBookingDate: bookingDate }, "Running date validation");
+    const bookingDate = new Date(process.env.BOOKING_DATE);
+
+    logger.info({ parsedBookingDate: bookingDate }, "Running date validation");
+
     const isBookingDateValidResult = checkValidBookingDate(bookingDate);
 
     if (!isBookingDateValidResult.isValid) {
@@ -189,6 +176,7 @@ async function performBooking(browser) {
         { validationMessage: isBookingDateValidResult.message },
         "Date validation failed",
       );
+
       throw new Error(isBookingDateValidResult.message);
     }
 
@@ -198,20 +186,22 @@ async function performBooking(browser) {
     );
 
     // Check valid booking times
-    logger.debug(
+    logger.info(
       {
         bookingTimeStart: process.env.BOOKING_TIME_START,
         bookingTimeEnd: process.env.BOOKING_TIME_END,
       },
       "Parsing booking times",
     );
+
     const bookingTimeStart = process.env.BOOKING_TIME_START;
     const bookingTimeEnd = process.env.BOOKING_TIME_END;
 
-    logger.debug(
-      { startTime: bookingTimeStart, endTime: bookingTimeEnd },
+    logger.info(
+      { bookingTimeStart: bookingTimeStart, bookingTimeEnd: bookingTimeEnd },
       "Running time validation",
     );
+
     const isBookingTimeValidResult = checkValidBookingTime(
       bookingTimeStart,
       bookingTimeEnd,
@@ -222,6 +212,7 @@ async function performBooking(browser) {
         { validationMessage: isBookingTimeValidResult.message },
         "Time validation failed",
       );
+
       throw new Error(isBookingTimeValidResult.message);
     }
 
@@ -235,10 +226,12 @@ async function performBooking(browser) {
       { url: process.env.BOOKING_PAGE_URL },
       "Navigating to booking page",
     );
+
     await page.goto(process.env.BOOKING_PAGE_URL);
 
     // Click on the readonly date input to trigger date picker
-    logger.debug("Opening date picker");
+    logger.info("Opening date picker");
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -247,7 +240,7 @@ async function performBooking(browser) {
       .locator("#DateBookingFrom_c1_textDate")
       .click();
 
-    logger.debug("Date picker opened");
+    logger.info("Date picker opened");
 
     // Convert to Date object for today's date in Singapore timezone
     const todaysDate = new Date();
@@ -255,8 +248,8 @@ async function performBooking(browser) {
       todaysDate.toLocaleString("en-US", { timeZone: "Asia/Singapore" }),
     );
 
-    logger.debug(
-      { todaysDate: singaporeTodaysDate, bookingDate },
+    logger.info(
+      { singaporeTodaysDate: singaporeTodaysDate, bookingDate: bookingDate },
       "Checking calendar navigation needs",
     );
 
@@ -265,10 +258,12 @@ async function performBooking(browser) {
     //   This is usually the case when the date we want is in the
     //   following month of today's month
     const monthDiff = bookingDate.getMonth() - singaporeTodaysDate.getMonth();
-    logger.debug({ monthDiff }, "Calendar month difference calculated");
+
+    logger.info({ monthDiff }, "Calendar month difference calculated");
 
     if (monthDiff === 1) {
-      logger.debug("Navigating to next month in calendar");
+      logger.info("Navigating to next month in calendar");
+
       await page
         .locator('iframe[id="frameBottom"]')
         .contentFrame()
@@ -286,10 +281,11 @@ async function performBooking(browser) {
       "-" +
       bookingDate.getFullYear().toString();
 
-    logger.debug(
+    logger.info(
       { formattedDate: bookingDateDDMthYYYY },
       "Selecting date in calendar",
     );
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -299,10 +295,11 @@ async function performBooking(browser) {
       .click();
 
     // Enter user chosen facility into search to narrow down
-    logger.debug(
+    logger.info(
       { facility: process.env.BOOKING_FACILITY },
       "Searching for facility",
     );
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -330,6 +327,11 @@ async function performBooking(browser) {
       .getByRole("link", { name: process.env.BOOKING_FACILITY })
       .waitFor({ state: "attached" });
 
+    logger.info(
+      { facility: process.env.BOOKING_FACILITY },
+      "Search for availability",
+    );
+
     // Click search for availability
     await page
       .locator('iframe[id="frameBottom"]')
@@ -338,6 +340,8 @@ async function performBooking(browser) {
       .contentFrame()
       .getByRole("link", { name: "Search Availability" })
       .click();
+
+    logger.info("Clicking on a random timeslot to go into booking page");
 
     // Click on the div for time 08:30 so that we can go to the booking page
     await page
@@ -358,6 +362,7 @@ async function performBooking(browser) {
       .locator('.scheduler_bluewhite_event[title*="selected"]')
       .waitFor();
 
+    logger.info("Click 'Make Booking' button");
     // Click make booking button to go to booking page
     await page
       .locator('iframe[id="frameBottom"]')
@@ -368,17 +373,21 @@ async function performBooking(browser) {
       .click();
 
     // Select booking start time
+    logger.info("Processing booking start time");
     const [startHour, startMinute] = bookingTimeStart.split(":").map(Number);
     const bookingStartDateTime = new Date(bookingDate);
+
     bookingStartDateTime.setHours(startHour, startMinute, 0, 0);
+
     const optionBookingStartDateTime = bookingStartDateTime
       .toLocaleString("en-US")
       .replaceAll(",", "");
 
-    logger.debug(
+    logger.info(
       { startTime: optionBookingStartDateTime },
       "Setting booking start time",
     );
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -390,17 +399,22 @@ async function performBooking(browser) {
       .selectOption(optionBookingStartDateTime);
 
     // Select booking end time
+    logger.info("Processing booking end time");
+
     const [endHour, endMinute] = bookingTimeEnd.split(":").map(Number);
     const bookingEndDateTime = new Date(bookingDate);
+
     bookingEndDateTime.setHours(endHour, endMinute, 0, 0);
+
     const optionBookingEndDateTime = bookingEndDateTime
       .toLocaleString("en-US")
       .replaceAll(",", "");
 
-    logger.debug(
+    logger.info(
       { endTime: optionBookingEndDateTime },
       "Setting booking end time",
     );
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -416,6 +430,11 @@ async function performBooking(browser) {
     //   WARN: If network is slow, this might exceed 10s, I might need to re-evaluate a more robust way to wait
     await page.waitForTimeout(10000);
 
+    logger.info(
+      { bookingPurpose: process.env.BOOKING_PURPOSE },
+      "Setting booking purpose after intentional delay",
+    );
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -428,6 +447,9 @@ async function performBooking(browser) {
 
     // Add co-booker
     //   Click button to add co-booker
+
+    logger.info({ coBooker: process.env.BOOKING_COBOOKER }, "Add co-booker");
+
     await page
       .locator('iframe[id="frameBottom"]')
       .contentFrame()
@@ -495,6 +517,8 @@ async function performBooking(browser) {
       .getByRole("link", { name: process.env.BOOKING_COBOOKER })
       .click();
 
+    logger.info("Accept acknowledgement");
+
     // Accept acknowledgement
     await page
       .locator('iframe[name="frameBottom"]')
@@ -509,6 +533,7 @@ async function performBooking(browser) {
     // Click confirm
     if (process.env.IS_BOOKING_DEBUG.toLowerCase() === "false") {
       logger.info("Confirming booking submission");
+
       await page
         .locator('iframe[name="frameBottom"]')
         .contentFrame()
@@ -524,7 +549,7 @@ async function performBooking(browser) {
 
     // Delay before clicking confirm to allow time for page to confirm
     await page.waitForTimeout(10000);
-    await context.close();
+
     return { success: true, message: "Booking process completed" };
   } catch (error) {
     logger.error(
@@ -536,7 +561,6 @@ async function performBooking(browser) {
       "Booking process failed",
     );
 
-    await context.close();
     return { success: false, message: error.stack };
   }
 }
