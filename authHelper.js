@@ -1,14 +1,5 @@
 const fs = require("fs");
-const logger =
-  process.env.CI === "true"
-    ? {
-        info: console.log,
-        error: console.error,
-        warn: console.warn,
-        debug: console.log,
-      }
-    : require("./logger");
-
+const logger = require("./logger");
 const authFile = process.env.STORAGESTATE_FP;
 
 // Validate required environment variables
