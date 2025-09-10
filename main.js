@@ -4,6 +4,9 @@ const { performBooking } = require("./bookingHelper");
 const logger = require("./logger");
 
 async function main() {
+  let hasError = false;
+  let browser;
+
   try {
     const todayDate = new Date();
     logger.info(
@@ -19,7 +22,7 @@ async function main() {
 
     logger.info({ headless: headlessState }, "Launching Playwright browser");
 
-    let browser = await chromium.launch({ headless: headlessState });
+    browser = await chromium.launch({ headless: headlessState });
 
     // Check if we need to authenticate
     const authResult = await authenticateIfNeeded(browser);
@@ -42,9 +45,10 @@ async function main() {
       "Booking completed successfully",
     );
 
-    await browser.close();
     logger.info("Booking automation run completed");
   } catch (error) {
+    hasError = true;
+
     logger.error(
       {
         error: error.message,
@@ -53,8 +57,16 @@ async function main() {
       },
       "Booking automation run failed",
     );
+  } finally {
+    // clean-up; close browser
+    if (browser) {
+      await browser.close();
+    }
 
-    process.exit(1);
+    // return exit code on error; stop date increment
+    if (hasError) {
+      process.exit(1);
+    }
   }
 }
 
